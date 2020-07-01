@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/http/httptrace"
 	"net/url"
 	"os"
 	"path"
@@ -778,7 +779,34 @@ START:
 	if timeout != 0 {
 		ctx, _ = context.WithTimeout(ctx, timeout)
 	}
-	req.Request = req.Request.WithContext(ctx)
+
+	trace := &httptrace.ClientTrace{
+		GotConn: func(connInfo httptrace.GotConnInfo) {
+			fmt.Printf("%+v Got Conn: %+v\n", time.Now(), connInfo)
+		},
+		DNSDone: func(dnsInfo httptrace.DNSDoneInfo) {
+			fmt.Printf("%+v DNS Info: %+v\n", time.Now(), dnsInfo)
+		},
+		ConnectStart: func(network, addr string) {
+			fmt.Printf("%+v ConnectStart\n", time.Now())
+		},
+		ConnectDone: func(network, addr string, err error) {
+			fmt.Printf("%+v ConnectDone\n", time.Now())
+		},
+		GotFirstResponseByte: func() {
+			fmt.Printf("%+v GotFirstResponseByte\n", time.Now())
+		},
+		TLSHandshakeStart: func() {
+			fmt.Printf("%+v TLSHandshakeStart\n", time.Now())
+		},
+		TLSHandshakeDone: func(state tls.ConnectionState, err error) {
+			fmt.Printf("%+v TLSHandshakeDone\n", time.Now())
+		},
+		GetConn: func(hostPort string) {
+			fmt.Printf("%+v GetConn\n", time.Now())
+		},
+	}
+	req.Request = req.Request.WithContext(httptrace.WithClientTrace(ctx, trace))
 
 	if backoff == nil {
 		backoff = retryablehttp.LinearJitterBackoff
@@ -795,7 +823,9 @@ START:
 	}
 
 	var result *Response
+	fmt.Printf("%+v starting client.Do(req)\n", time.Now())
 	resp, err := client.Do(req)
+	fmt.Printf("%+v finished client.Do(req)\n", time.Now())
 	if resp != nil {
 		result = &Response{Response: resp}
 	}
