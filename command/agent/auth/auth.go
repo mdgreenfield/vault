@@ -121,6 +121,8 @@ func (ah *AuthHandler) Run(ctx context.Context, am AuthMethod) {
 			continue
 		}
 
+		ah.logger.Trace("finished pulling the authentication credentials")
+
 		clientToUse := ah.client
 		if ah.wrapTTL > 0 {
 			wrapClient, err := ah.client.Clone()
@@ -135,6 +137,8 @@ func (ah *AuthHandler) Run(ctx context.Context, am AuthMethod) {
 			clientToUse = wrapClient
 		}
 
+		ah.logger.Trace("issuing request to Vault to login")
+
 		secret, err := clientToUse.Logical().Write(path, data)
 		// Check errors/sanity
 		if err != nil {
@@ -142,6 +146,8 @@ func (ah *AuthHandler) Run(ctx context.Context, am AuthMethod) {
 			backoffOrQuit(ctx, backoff)
 			continue
 		}
+
+		ah.logger.Trace("finished request to Vault to login")
 
 		switch {
 		case ah.wrapTTL > 0:

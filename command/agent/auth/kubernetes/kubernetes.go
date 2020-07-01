@@ -80,6 +80,8 @@ func (k *kubernetesMethod) Authenticate(ctx context.Context, client *api.Client)
 		return "", nil, errwrap.Wrapf("error reading JWT with Kubernetes Auth: {{err}}", err)
 	}
 
+	k.logger.Trace("successfully read JWT for authentication")
+
 	return fmt.Sprintf("%s/login", k.mountPath), map[string]interface{}{
 		"role": k.role,
 		"jwt":  jwtString,
