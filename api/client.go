@@ -782,10 +782,13 @@ START:
 
 	trace := &httptrace.ClientTrace{
 		GotConn: func(connInfo httptrace.GotConnInfo) {
-			fmt.Printf("%+v Got Conn: %+v\n", time.Now(), connInfo)
+			fmt.Printf("%+v GotConn: %+v\n", time.Now(), connInfo)
+		},
+		DNSStart: func(info httptrace.DNSStartInfo) {
+			fmt.Printf("%+v DNSStart - DNS Info: %+v\n", time.Now(), info)
 		},
 		DNSDone: func(dnsInfo httptrace.DNSDoneInfo) {
-			fmt.Printf("%+v DNS Info: %+v\n", time.Now(), dnsInfo)
+			fmt.Printf("%+v DNSDone - DNS Info: %+v\n", time.Now(), dnsInfo)
 		},
 		ConnectStart: func(network, addr string) {
 			fmt.Printf("%+v ConnectStart\n", time.Now())
